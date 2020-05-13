@@ -44,16 +44,31 @@ app.get('/login', (req, res) => {
 app.get('/register', (req, res) => {
     res.render('register')
 })
+app.get('/logout', (req, res) => {
+    req.logout();
+    res.redirect('/')
+})
+app.get('/secrets', (req, res) => {
+    if(req.isAuthenticated()) {
+        res.render('secrets')
+    } else {
+        res.redirect('/login')
+    }
+})
+
 app.post('/register', (req, res) => {
     User.register({username: req.body.username}, req.body.password, (err, user) => {
-        
+        if(!err) {
+            passport.authenticate('local')(req, res, () => {
+                res.redirect('/secrets')
+            })
+        } else {
+            res.redirect('/register')
+        }
     })
 })
 
-app.post('/login', (req, res) => {
+app.post('/login', passport.authenticate('local', { successRedirect: '/secrets',
+    failureRedirect: '/login' })
+);
 
-})
-
-app.get('/logout', (req, res) => {
-    res.redirect('/')
-})
